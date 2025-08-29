@@ -7,6 +7,33 @@ let particles = [];
 let htmlElements = [];
 let cssStyles = {};
 
+// ===== SISTEMA DE LOGROS Y ESTADÍSTICAS =====
+let gameStats = {
+    missionsCompleted: 0,
+    totalObjectives: 0,
+    objectivesCompleted: 0,
+    timeSpent: 0,
+    achievements: [],
+    currentStreak: 0,
+    bestStreak: 0
+};
+
+let achievements = [
+    { id: 'first-mission', name: 'Primer Paso', description: 'Completa tu primera misión', unlocked: false },
+    { id: 'css-master', name: 'Maestro del CSS', description: 'Completa todas las misiones de CSS', unlocked: false },
+    { id: 'speed-runner', name: 'Velocista', description: 'Completa 3 misiones en menos de 10 minutos', unlocked: false },
+    { id: 'perfectionist', name: 'Perfeccionista', description: 'Completa todos los objetivos de una misión sin errores', unlocked: false },
+    { id: 'innovator', name: 'Innovador', description: 'Crea una animación personalizada', unlocked: false }
+];
+
+// ===== SISTEMA DE SONIDOS =====
+let audioContext;
+let sounds = {};
+
+// ===== SISTEMA DE PARTÍCULAS MEJORADO =====
+let particleSystems = [];
+let celebrationParticles = [];
+
 // ===== CONFIGURACIÓN DE MISIONES =====
 const missions = [
     {
@@ -912,6 +939,89 @@ function createCelebrationParticles() {
             ease: "power2.out",
             onComplete: () => {
                 scene.remove(particle);
+            }
+        });
+    }
+}
+
+// ===== SISTEMA DE LOGROS Y ESTADÍSTICAS =====
+function updateGameStats() {
+    gameStats.totalObjectives = missions.reduce((total, mission) => total + mission.objectives.length, 0);
+    gameStats.objectivesCompleted = missions.reduce((total, mission) => 
+        total + mission.objectives.filter(obj => obj.completed).length, 0);
+    
+    // Guardar en localStorage
+    localStorage.setItem('codescape3d_stats', JSON.stringify(gameStats));
+    localStorage.setItem('codescape3d_achievements', JSON.stringify(achievements));
+}
+
+function checkAchievements() {
+    // Primer paso
+    if (gameStats.missionsCompleted >= 1 && !achievements.find(a => a.id === 'first-mission').unlocked) {
+        unlockAchievement('first-mission');
+    }
+    
+    // Maestro del CSS
+    const cssMissions = missions.filter(m => m.id.includes('css') || m.id.includes('styling'));
+    const cssCompleted = cssMissions.every(m => m.objectives.every(obj => obj.completed));
+    if (cssCompleted && !achievements.find(a => a.id === 'css-master').unlocked) {
+        unlockAchievement('css-master');
+    }
+    
+    // Perfeccionista
+    const currentMission = missions[currentMission];
+    if (currentMission && currentMission.objectives.every(obj => obj.completed)) {
+        if (!achievements.find(a => a.id === 'perfectionist').unlocked) {
+            unlockAchievement('perfectionist');
+        }
+    }
+}
+
+function unlockAchievement(achievementId) {
+    const achievement = achievements.find(a => a.id === achievementId);
+    if (achievement && !achievement.unlocked) {
+        achievement.unlocked = true;
+        showNotification(`🏆 ¡Logro desbloqueado: ${achievement.name}!`, 'success');
+        createAchievementParticles();
+        updateGameStats();
+    }
+}
+
+function createAchievementParticles() {
+    for (let i = 0; i < 30; i++) {
+        const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6)
+        });
+        const particle = new THREE.Mesh(geometry, material);
+        
+        particle.position.set(
+            (Math.random() - 0.5) * 10,
+            Math.random() * 5,
+            (Math.random() - 0.5) * 10
+        );
+        
+        scene.add(particle);
+        celebrationParticles.push(particle);
+        
+        gsap.to(particle.position, {
+            y: particle.position.y + 15,
+            x: particle.position.x + (Math.random() - 0.5) * 8,
+            z: particle.position.z + (Math.random() - 0.5) * 8,
+            duration: 3,
+            ease: "power2.out"
+        });
+        
+        gsap.to(particle.material, {
+            opacity: 0,
+            duration: 3,
+            ease: "power2.out",
+            onComplete: () => {
+                scene.remove(particle);
+                const index = celebrationParticles.indexOf(particle);
+                if (index > -1) {
+                    celebrationParticles.splice(index, 1);
+                }
             }
         });
     }

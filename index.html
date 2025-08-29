@@ -174,10 +174,42 @@ h1 {
         </div>
     </div>
 
+    <!-- Panel de estadísticas -->
+    <div class="stats-panel" id="stats-panel">
+        <div class="stats-header">
+            <h4>📊 Estadísticas</h4>
+            <button class="close-btn" id="close-stats">×</button>
+        </div>
+        <div class="stats-content">
+            <div class="stats-section">
+                <h5>Progreso General</h5>
+                <div class="stat-item">
+                    <span>Misiones Completadas:</span>
+                    <span id="missions-completed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Objetivos Completados:</span>
+                    <span id="objectives-completed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Logros Desbloqueados:</span>
+                    <span id="achievements-unlocked">0</span>
+                </div>
+            </div>
+            <div class="stats-section">
+                <h5>Logros</h5>
+                <div id="achievements-list">
+                    <!-- Los logros se cargarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notificaciones -->
     <div class="notification-container" id="notification-container"></div>
 
     <!-- Scripts -->
+    <script src="missions-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
