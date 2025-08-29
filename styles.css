@@ -257,31 +257,19 @@ body {
     font-weight: 600;
 }
 
-.objectives-list {
-    list-style: none;
+#objectives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .objective {
     padding: 0.5rem 0;
     color: var(--text-secondary);
-    position: relative;
-    padding-left: 1.5rem;
     transition: var(--transition-fast);
 }
 
-.objective::before {
-    content: '○';
-    position: absolute;
-    left: 0;
-    color: var(--primary-purple);
-}
-
 .objective.completed {
-    color: var(--primary-green);
-}
-
-.objective.completed::before {
-    content: '●';
     color: var(--primary-green);
 }
 
