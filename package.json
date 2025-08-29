@@ -7,7 +7,8 @@
     "start": "python -m http.server 8000",
     "dev": "python -m http.server 8000",
     "serve": "python -m http.server 8000",
-    "build": "echo 'No build step required - static files only'",
+    "build": "echo 'Build completed - static files ready'",
+    "vercel-build": "echo 'Vercel build completed'",
     "test": "echo 'No tests specified'",
     "lint": "echo 'No linter configured'"
   },
