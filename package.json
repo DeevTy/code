@@ -1,0 +1,50 @@
+{
+  "name": "codescape-3d",
+  "version": "1.0.0",
+  "description": "Tu Entorno de Aprendizaje Inmersivo para HTML y CSS en 3D",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "serve": "python -m http.server 8000",
+    "build": "echo 'No build step required - static files only'",
+    "test": "echo 'No tests specified'",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": [
+    "3d",
+    "webgl",
+    "threejs",
+    "html",
+    "css",
+    "learning",
+    "education",
+    "interactive",
+    "gamification",
+    "web-development",
+    "frontend",
+    "javascript",
+    "gsap",
+    "glassmorphism"
+  ],
+  "author": "CodeScape 3D Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/codescape-3d.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/codescape-3d/issues"
+  },
+  "homepage": "https://github.com/yourusername/codescape-3d#readme",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeScape 3D - Tu Entorno de Aprendizaje Inmersivo para HTML y CSS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <!-- Fondo animado con partículas -->
+    <div id="particles-bg"></div>
+    
+    <!-- Header con glassmorphism -->
+    <header class="game-header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🚀</span>
+                <h1>CodeScape 3D</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-module="html">HTML</button>
+                <button class="nav-btn" data-module="css">CSS</button>
+                <button class="nav-btn" data-module="flexbox">Flexbox</button>
+                <button class="nav-btn" data-module="grid">Grid</button>
+            </nav>
+            <div class="user-controls">
+                <button class="control-btn" id="reset-btn">🔄 Reset</button>
+                <button class="control-btn" id="fullscreen-btn">⛶</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor principal -->
+    <main class="main-container">
+        <!-- Panel lateral de misiones -->
+        <aside class="missions-panel">
+            <div class="panel-header">
+                <h3>🎯 Misión Actual</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="mission-progress"></div>
+                </div>
+            </div>
+            <div class="mission-content">
+                <h4 id="mission-title">Bienvenido a CodeScape 3D</h4>
+                <p id="mission-description">Escribe tu primer código HTML y ve cómo cobra vida en 3D</p>
+                <div class="mission-hint">
+                    <span class="hint-icon">💡</span>
+                    <p id="mission-hint">Intenta escribir: &lt;h1&gt;¡Hola Mundo!&lt;/h1&gt;</p>
+                </div>
+                <div class="mission-objectives">
+                    <h5>Objetivos:</h5>
+                    <ul id="objectives-list">
+                        <li class="objective" data-objective="create-h1">Crear un título H1</li>
+                        <li class="objective" data-objective="create-div">Crear un contenedor DIV</li>
+                        <li class="objective" data-objective="style-element">Aplicar estilos CSS</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button class="mission-btn" id="next-mission">Siguiente Misión →</button>
+                <button class="mission-btn secondary" id="hint-btn">💡 Pista</button>
+            </div>
+        </aside>
+
+        <!-- Editor de código -->
+        <section class="code-editor-section">
+            <div class="editor-header">
+                <h3>📝 Editor de Código</h3>
+                <div class="editor-controls">
+                    <button class="editor-btn" id="format-btn">✨ Formatear</button>
+                    <button class="editor-btn" id="clear-btn">🗑️ Limpiar</button>
+                </div>
+            </div>
+            <div class="editor-container">
+                <div class="editor-tabs">
+                    <button class="tab-btn active" data-tab="html">HTML</button>
+                    <button class="tab-btn" data-tab="css">CSS</button>
+                </div>
+                <div class="editor-content">
+                    <div class="code-editor" id="html-editor" contenteditable="true">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Mi Mundo 3D&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;¡Hola Mundo!&lt;/h1&gt;
+    &lt;div class="container"&gt;
+        &lt;p&gt;Mi primera página&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+                    <div class="code-editor hidden" id="css-editor" contenteditable="true">
+/* Estilos CSS */
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+h1 {
+    color: #00ff88;
+    text-shadow: 0 0 10px #00ff88;
+}
+
+.container {
+    background-color: #333;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lienzo 3D -->
+        <section class="canvas-section">
+            <div class="canvas-header">
+                <h3>🌍 Mundo 3D</h3>
+                <div class="canvas-controls">
+                    <button class="canvas-btn" id="rotate-btn">🔄 Rotar</button>
+                    <button class="canvas-btn" id="zoom-btn">🔍 Zoom</button>
+                    <button class="canvas-btn" id="reset-camera-btn">🏠 Reset</button>
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="three-canvas"></canvas>
+                <div class="canvas-overlay">
+                    <div class="loading-indicator" id="loading-indicator">
+                        <div class="spinner"></div>
+                        <p>Renderizando mundo 3D...</p>
+                    </div>
+                    <div class="success-message" id="success-message">
+                        <div class="success-icon">🎉</div>
+                        <h4>¡Misión Completada!</h4>
+                        <p>Has creado algo increíble</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Panel de información -->
+    <div class="info-panel" id="info-panel">
+        <div class="info-header">
+            <h4>📚 Información</h4>
+            <button class="close-btn" id="close-info">×</button>
+        </div>
+        <div class="info-content">
+            <div class="info-section">
+                <h5>Etiquetas HTML</h5>
+                <div class="tag-list">
+                    <span class="tag" data-tag="h1">H1</span>
+                    <span class="tag" data-tag="h2">H2</span>
+                    <span class="tag" data-tag="div">DIV</span>
+                    <span class="tag" data-tag="p">P</span>
+                    <span class="tag" data-tag="span">SPAN</span>
+                </div>
+            </div>
+            <div class="info-section">
+                <h5>Propiedades CSS</h5>
+                <div class="property-list">
+                    <span class="property" data-property="color">color</span>
+                    <span class="property" data-property="background-color">background-color</span>
+                    <span class="property" data-property="border-radius">border-radius</span>
+                    <span class="property" data-property="box-shadow">box-shadow</span>
+                    <span class="property" data-property="display">display</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
