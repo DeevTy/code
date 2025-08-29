@@ -209,6 +209,162 @@ function playSound(soundName) {
 let particleSystems = [];
 let celebrationParticles = [];
 
+// ===== SISTEMA MULTIPLAYER =====
+let multiplayerSystem = {
+    isEnabled: false,
+    roomId: null,
+    players: [],
+    sharedCreations: [],
+    socket: null
+};
+
+// ===== FUNCIONES MULTIPLAYER =====
+function initMultiplayer() {
+    // Simulación de WebSocket para demostración
+    console.log('Sistema multiplayer inicializado');
+    multiplayerSystem.isEnabled = true;
+    
+    // Crear sala aleatoria
+    multiplayerSystem.roomId = generateRoomId();
+    
+    // Simular otros jugadores
+    simulateOtherPlayers();
+    
+    showNotification('🌐 Conectado al modo multiplayer!', 'info');
+}
+
+function generateRoomId() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function simulateOtherPlayers() {
+    const playerNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+    const randomPlayers = Math.floor(Math.random() * 3) + 1;
+    
+    for (let i = 0; i < randomPlayers; i++) {
+        const player = {
+            id: `player_${i}`,
+            name: playerNames[i],
+            score: Math.floor(Math.random() * 5000),
+            currentMission: Math.floor(Math.random() * 7),
+            isOnline: true
+        };
+        multiplayerSystem.players.push(player);
+    }
+}
+
+function shareCreation() {
+    if (!multiplayerSystem.isEnabled) {
+        showNotification('❌ Modo multiplayer no disponible', 'error');
+        return;
+    }
+    
+    const creation = {
+        id: Date.now(),
+        playerName: 'Tú',
+        htmlCode: document.getElementById('html-editor').textContent,
+        cssCode: document.getElementById('css-editor').textContent,
+        score: gameStats.totalScore,
+        timestamp: new Date().toISOString(),
+        likes: 0
+    };
+    
+    multiplayerSystem.sharedCreations.push(creation);
+    showNotification('🚀 ¡Creación compartida con éxito!', 'success');
+    playSound('success');
+    
+    // Simular reacciones de otros jugadores
+    setTimeout(() => {
+        const reactions = ['👍', '❤️', '🎉', '🔥'];
+        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+        showNotification(`${randomReaction} Alice le gustó tu creación!`, 'info');
+    }, 2000);
+}
+
+function showMultiplayerPanel() {
+    const panel = document.createElement('div');
+    panel.className = 'multiplayer-panel';
+    panel.innerHTML = `
+        <div class="panel-header">
+            <h4>🌐 Sala Multiplayer</h4>
+            <button class="close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+        <div class="panel-content">
+            <div class="room-info">
+                <h5>Sala: ${multiplayerSystem.roomId}</h5>
+                <p>Jugadores conectados: ${multiplayerSystem.players.length + 1}</p>
+            </div>
+            <div class="players-list">
+                <h5>Jugadores:</h5>
+                <div class="player-item">
+                    <span class="player-name">Tú</span>
+                    <span class="player-score">${gameStats.totalScore}</span>
+                    <span class="player-status online">🟢</span>
+                </div>
+                ${multiplayerSystem.players.map(player => `
+                    <div class="player-item">
+                        <span class="player-name">${player.name}</span>
+                        <span class="player-score">${player.score}</span>
+                        <span class="player-status online">🟢</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="shared-creations">
+                <h5>Creaciones Compartidas:</h5>
+                ${multiplayerSystem.sharedCreations.map(creation => `
+                    <div class="creation-item">
+                        <div class="creation-header">
+                            <span class="creation-author">${creation.playerName}</span>
+                            <span class="creation-score">${creation.score} pts</span>
+                        </div>
+                        <div class="creation-preview">
+                            <code>${creation.htmlCode.substring(0, 50)}...</code>
+                        </div>
+                        <div class="creation-actions">
+                            <button class="action-btn" onclick="likeCreation(${creation.id})">👍 ${creation.likes}</button>
+                            <button class="action-btn" onclick="viewCreation(${creation.id})">👁️ Ver</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="multiplayer-actions">
+                <button class="action-btn primary" onclick="shareCreation()">🚀 Compartir Creación</button>
+                <button class="action-btn" onclick="joinRandomRoom()">🎲 Sala Aleatoria</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+}
+
+function likeCreation(creationId) {
+    const creation = multiplayerSystem.sharedCreations.find(c => c.id === creationId);
+    if (creation) {
+        creation.likes++;
+        showNotification('👍 ¡Like enviado!', 'success');
+        playSound('click');
+    }
+}
+
+function viewCreation(creationId) {
+    const creation = multiplayerSystem.sharedCreations.find(c => c.id === creationId);
+    if (creation) {
+        document.getElementById('html-editor').textContent = creation.htmlCode;
+        document.getElementById('css-editor').textContent = creation.cssCode;
+        parseAndRender();
+        showNotification('👁️ Creación cargada', 'info');
+        playSound('success');
+    }
+}
+
+function joinRandomRoom() {
+    multiplayerSystem.roomId = generateRoomId();
+    multiplayerSystem.players = [];
+    simulateOtherPlayers();
+    showNotification('🎲 Unido a nueva sala', 'info');
+    playSound('click');
+}
+
 // ===== CONFIGURACIÓN DE MISIONES =====
 const missions = [
     {
@@ -530,6 +686,13 @@ function setupEventListeners() {
     document.getElementById('hint-btn').addEventListener('click', showHint);
     
     // Controles generales
+    document.getElementById('multiplayer-btn').addEventListener('click', () => {
+        if (!multiplayerSystem.isEnabled) {
+            initMultiplayer();
+        }
+        showMultiplayerPanel();
+        playSound('click');
+    });
     document.getElementById('reset-btn').addEventListener('click', resetAll);
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
     
@@ -546,7 +709,10 @@ function setupEventListeners() {
     });
 }
 
-// ===== THREE.JS SETUP =====
+// ===== THREE.JS SETUP AVANZADO =====
+let composer, bloomPass, effectComposer;
+let customShaders = {};
+
 function initializeThreeJS() {
     const canvas = document.getElementById('three-canvas');
     
@@ -569,6 +735,14 @@ function initializeThreeJS() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    
+    // Post-procesamiento
+    setupPostProcessing();
+    
+    // Shaders personalizados
+    createCustomShaders();
     
     // Controles de órbita
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -577,8 +751,8 @@ function initializeThreeJS() {
     controls.maxDistance = 50;
     controls.minDistance = 2;
     
-    // Iluminación
-    setupLighting();
+    // Iluminación avanzada
+    setupAdvancedLighting();
     
     // Suelo
     createGround();
@@ -590,31 +764,95 @@ function initializeThreeJS() {
     window.addEventListener('resize', onWindowResize);
 }
 
-function setupLighting() {
-    // Luz ambiental
+// ===== POST-PROCESAMIENTO =====
+function setupPostProcessing() {
+    // Composer principal
+    composer = new THREE.EffectComposer(renderer);
+    
+    // Render pass
+    const renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    
+    // Bloom pass para efectos de resplandor
+    bloomPass = new THREE.UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        0.5,  // Intensidad
+        0.4,  // Radio
+        0.85  // Umbral
+    );
+    composer.addPass(bloomPass);
+}
+
+// ===== SHADERS PERSONALIZADOS =====
+function createCustomShaders() {
+    // Shader de efecto neón
+    customShaders.neon = {
+        uniforms: {
+            'tDiffuse': { value: null },
+            'time': { value: 0.0 },
+            'intensity': { value: 1.0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float time;
+            uniform float intensity;
+            varying vec2 vUv;
+            
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                vec3 neon = vec3(0.0, 1.0, 0.8) * sin(time * 2.0) * 0.5 + 0.5;
+                gl_FragColor = vec4(color.rgb + neon * intensity, color.a);
+            }
+        `
+    };
+}
+
+function setupAdvancedLighting() {
+    // Luz ambiental con color dinámico
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
     scene.add(ambientLight);
     
-    // Luz direccional principal
+    // Luz direccional principal con sombras suaves
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 5);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
+    directionalLight.shadow.camera.left = -10;
+    directionalLight.shadow.camera.right = 10;
+    directionalLight.shadow.camera.top = 10;
+    directionalLight.shadow.camera.bottom = -10;
     scene.add(directionalLight);
     
-    // Luces de color para efectos neón
-    const blueLight = new THREE.PointLight(0x00d4ff, 0.5, 20);
-    blueLight.position.set(-5, 5, 0);
-    scene.add(blueLight);
-    
-    const greenLight = new THREE.PointLight(0x00ff88, 0.5, 20);
-    greenLight.position.set(5, 5, 0);
-    scene.add(greenLight);
-    
-    const purpleLight = new THREE.PointLight(0x8b5cf6, 0.3, 15);
-    purpleLight.position.set(0, 8, -5);
-    scene.add(purpleLight);
+    // Múltiples luces puntuales para efectos
+    const colors = [0x00ff88, 0x00d4ff, 0x8b5cf6, 0xec4899];
+    colors.forEach((color, index) => {
+        const pointLight = new THREE.PointLight(color, 0.5, 20);
+        pointLight.position.set(
+            Math.cos(index * Math.PI / 2) * 8,
+            3,
+            Math.sin(index * Math.PI / 2) * 8
+        );
+        scene.add(pointLight);
+        
+        // Animación de las luces
+        gsap.to(pointLight.position, {
+            y: 8,
+            duration: 2 + index * 0.5,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+    });
 }
 
 function createGround() {
@@ -1256,6 +1494,65 @@ function updateScoreDisplay() {
 function resetStreak() {
     gameStats.currentStreak = 0;
     updateScoreDisplay();
+}
+
+// ===== PERSISTENCIA DE DATOS =====
+function loadGameProgress() {
+    try {
+        const savedStats = localStorage.getItem('codescape3d_stats');
+        const savedAchievements = localStorage.getItem('codescape3d_achievements');
+        
+        if (savedStats) {
+            const parsedStats = JSON.parse(savedStats);
+            gameStats = { ...gameStats, ...parsedStats };
+        }
+        
+        if (savedAchievements) {
+            const parsedAchievements = JSON.parse(savedAchievements);
+            achievements = achievements.map(achievement => {
+                const saved = parsedAchievements.find(a => a.id === achievement.id);
+                return saved ? { ...achievement, ...saved } : achievement;
+            });
+        }
+        
+        updateScoreDisplay();
+        updateStatsDisplay();
+    } catch (error) {
+        console.log('Error cargando progreso:', error);
+    }
+}
+
+function updateStatsDisplay() {
+    const missionsCompleted = document.getElementById('missions-completed');
+    const objectivesCompleted = document.getElementById('objectives-completed');
+    const achievementsUnlocked = document.getElementById('achievements-unlocked');
+    
+    if (missionsCompleted) {
+        missionsCompleted.textContent = gameStats.missionsCompleted;
+    }
+    
+    if (objectivesCompleted) {
+        objectivesCompleted.textContent = gameStats.objectivesCompleted;
+    }
+    
+    if (achievementsUnlocked) {
+        const unlockedCount = achievements.filter(a => a.unlocked).length;
+        achievementsUnlocked.textContent = unlockedCount;
+    }
+    
+    // Actualizar lista de logros
+    const achievementsList = document.getElementById('achievements-list');
+    if (achievementsList) {
+        achievementsList.innerHTML = achievements.map(achievement => `
+            <div class="achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}">
+                <span class="achievement-icon">${achievement.unlocked ? '🏆' : '🔒'}</span>
+                <div class="achievement-info">
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-description">${achievement.description}</div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
 function createAchievementParticles() {

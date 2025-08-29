@@ -864,6 +864,165 @@ body {
     box-shadow: var(--glow-blue);
 }
 
+/* ===== PANEL MULTIPLAYER ===== */
+.multiplayer-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-height: 80vh;
+    background: var(--bg-glass);
+    border: var(--border-glass);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-glass);
+    z-index: 2000;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: var(--border-glass);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.panel-header h4 {
+    color: var(--primary-blue);
+    font-family: 'Orbitron', monospace;
+}
+
+.panel-content {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.room-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 212, 255, 0.1);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.room-info h5 {
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.players-list {
+    margin-bottom: 1.5rem;
+}
+
+.players-list h5 {
+    color: var(--primary-green);
+    margin-bottom: 0.5rem;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+}
+
+.player-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.player-score {
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.player-status {
+    font-size: 0.8rem;
+}
+
+.shared-creations {
+    margin-bottom: 1.5rem;
+}
+
+.shared-creations h5 {
+    color: var(--primary-purple);
+    margin-bottom: 0.5rem;
+}
+
+.creation-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.creation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.creation-author {
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.creation-score {
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.creation-preview {
+    margin-bottom: 0.5rem;
+}
+
+.creation-preview code {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.creation-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    background: var(--bg-glass);
+    border: var(--border-glass);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-medium);
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    background: var(--bg-glass-hover);
+    box-shadow: var(--glow-blue);
+}
+
+.action-btn.primary {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
+    color: var(--bg-dark);
+    font-weight: 600;
+}
+
+.multiplayer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
 /* ===== NOTIFICACIONES DE PUNTUACIÓN ===== */
 .score-notification {
     position: fixed;
@@ -1002,6 +1161,8 @@ body {
     
     .header-content {
         padding: 0.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
     }
     
     .logo h1 {
@@ -1010,12 +1171,20 @@ body {
     
     .nav-menu {
         gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .score-display {
+        margin: 0;
+        gap: 1rem;
     }
     
     .nav-btn, .control-btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.8rem;
         min-height: 40px;
+        touch-action: manipulation;
     }
     
     .missions-panel, .code-editor-section, .canvas-section {
@@ -1029,6 +1198,96 @@ body {
     .code-editor {
         font-size: 12px;
         padding: 1rem;
+    }
+    
+    /* Mejoras táctiles */
+    .nav-btn:active, .control-btn:active, .mission-btn:active {
+        transform: scale(0.95);
+    }
+    
+    /* Panel de información móvil */
+    .info-panel, .stats-panel {
+        width: 95%;
+        right: -100%;
+        top: 50%;
+    }
+    
+    .info-panel.active, .stats-panel.active {
+        right: 2.5%;
+    }
+    
+    /* Panel multiplayer móvil */
+    .multiplayer-panel {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    /* Notificaciones móviles */
+    .notification {
+        min-width: 280px;
+        font-size: 0.9rem;
+    }
+    
+    .score-notification {
+        min-width: 180px;
+        padding: 1rem;
+    }
+}
+
+/* ===== MEJORAS MÓVILES ESPECÍFICAS ===== */
+@media (max-width: 768px) and (orientation: landscape) {
+    .main-container {
+        grid-template-columns: 200px 1fr 1fr;
+        gap: 1rem;
+        padding: 5rem 1rem 1rem;
+    }
+    
+    .header-content {
+        flex-direction: row;
+        padding: 0.5rem 1rem;
+    }
+    
+    .score-display {
+        display: none;
+    }
+}
+
+/* ===== GESTOS TÁCTILES ===== */
+@media (hover: none) and (pointer: coarse) {
+    .nav-btn:hover, .control-btn:hover, .mission-btn:hover {
+        transform: none;
+    }
+    
+    .nav-btn:active, .control-btn:active, .mission-btn:active {
+        transform: scale(0.95);
+        background: var(--bg-glass-hover);
+    }
+    
+    /* Mejorar scroll en móviles */
+    .code-editor, .panel-content {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Aumentar área de toque */
+    .tab-btn, .editor-btn, .canvas-btn {
+        min-height: 44px;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* ===== ACCESIBILIDAD MÓVIL ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== MODO OSCURO MÓVIL ===== */
+@media (prefers-color-scheme: dark) {
+    .multiplayer-panel {
+        background: rgba(0, 0, 0, 0.9);
     }
 }
 
