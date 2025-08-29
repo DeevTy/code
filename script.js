@@ -15,8 +15,24 @@ let gameStats = {
     timeSpent: 0,
     achievements: [],
     currentStreak: 0,
-    bestStreak: 0
+    bestStreak: 0,
+    totalScore: 0,
+    accuracy: 0,
+    speedBonus: 0
 };
+
+// ===== SISTEMA DE PUNTUACIÓN =====
+let scoringSystem = {
+    objectiveComplete: 100,
+    missionComplete: 500,
+    speedBonus: 50,
+    accuracyBonus: 25,
+    streakBonus: 10,
+    timePenalty: 5
+};
+
+let currentMissionStartTime = Date.now();
+let lastObjectiveTime = Date.now();
 
 let achievements = [
     { id: 'first-mission', name: 'Primer Paso', description: 'Completa tu primera misión', unlocked: false },
@@ -29,6 +45,165 @@ let achievements = [
 // ===== SISTEMA DE SONIDOS =====
 let audioContext;
 let sounds = {};
+
+// Inicializar sistema de audio
+function initAudioSystem() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        createSounds();
+    } catch (error) {
+        console.log('Audio no disponible:', error);
+    }
+}
+
+// Crear sonidos sintéticos
+function createSounds() {
+    sounds = {
+        click: createClickSound(),
+        success: createSuccessSound(),
+        error: createErrorSound(),
+        achievement: createAchievementSound(),
+        type: createTypeSound(),
+        complete: createCompleteSound()
+    };
+}
+
+function createClickSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    };
+}
+
+function createSuccessSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C
+        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E
+        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+    };
+}
+
+function createErrorSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+    };
+}
+
+function createAchievementSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Melodía de celebración
+        const notes = [523, 659, 784, 1047, 784, 659, 523]; // C-E-G-C-G-E-C
+        const duration = 0.1;
+        
+        notes.forEach((note, index) => {
+            oscillator.frequency.setValueAtTime(note, audioContext.currentTime + index * duration);
+        });
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + notes.length * duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + notes.length * duration);
+    };
+}
+
+function createTypeSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.05);
+    };
+}
+
+function createCompleteSound() {
+    return () => {
+        if (!audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Acorde mayor
+        const notes = [523, 659, 784, 1047]; // C-E-G-C
+        const duration = 0.15;
+        
+        notes.forEach((note, index) => {
+            oscillator.frequency.setValueAtTime(note, audioContext.currentTime + index * duration);
+        });
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + notes.length * duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + notes.length * duration);
+    };
+}
+
+// Función para reproducir sonidos
+function playSound(soundName) {
+    if (sounds[soundName]) {
+        sounds[soundName]();
+    }
+}
 
 // ===== SISTEMA DE PARTÍCULAS MEJORADO =====
 let particleSystems = [];
@@ -314,8 +489,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
     setupEventListeners();
     initializeThreeJS();
+    initAudioSystem();
+    initCodeEditor();
     loadMission(0);
     createParticles();
+    loadGameProgress();
     showNotification('¡Bienvenido a CodeScape 3D!', 'info');
 }
 
@@ -984,7 +1162,100 @@ function unlockAchievement(achievementId) {
         showNotification(`🏆 ¡Logro desbloqueado: ${achievement.name}!`, 'success');
         createAchievementParticles();
         updateGameStats();
+        playSound('achievement');
     }
+}
+
+// ===== SISTEMA DE PUNTUACIÓN =====
+function calculateScore(objectiveId, timeTaken) {
+    let score = scoringSystem.objectiveComplete;
+    
+    // Bonus por velocidad
+    if (timeTaken < 30000) { // Menos de 30 segundos
+        score += scoringSystem.speedBonus;
+        gameStats.speedBonus += scoringSystem.speedBonus;
+    }
+    
+    // Bonus por racha
+    if (gameStats.currentStreak > 0) {
+        const streakBonus = gameStats.currentStreak * scoringSystem.streakBonus;
+        score += streakBonus;
+    }
+    
+    // Penalización por tiempo
+    if (timeTaken > 120000) { // Más de 2 minutos
+        const penalty = Math.floor(timeTaken / 60000) * scoringSystem.timePenalty;
+        score = Math.max(0, score - penalty);
+    }
+    
+    return score;
+}
+
+function addScore(points, reason) {
+    gameStats.totalScore += points;
+    gameStats.currentStreak++;
+    
+    if (gameStats.currentStreak > gameStats.bestStreak) {
+        gameStats.bestStreak = gameStats.currentStreak;
+    }
+    
+    showScoreNotification(points, reason);
+    updateScoreDisplay();
+    updateGameStats();
+}
+
+function showScoreNotification(points, reason) {
+    const notification = document.createElement('div');
+    notification.className = 'score-notification';
+    notification.innerHTML = `
+        <div class="score-icon">⭐</div>
+        <div class="score-text">
+            <div class="score-points">+${points}</div>
+            <div class="score-reason">${reason}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    gsap.fromTo(notification, 
+        { opacity: 0, y: 20, scale: 0.8 },
+        { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            duration: 0.5, 
+            ease: "back.out(1.7)",
+            onComplete: () => {
+                gsap.to(notification, {
+                    opacity: 0,
+                    y: -20,
+                    scale: 0.8,
+                    delay: 2,
+                    duration: 0.5,
+                    onComplete: () => {
+                        document.body.removeChild(notification);
+                    }
+                });
+            }
+        }
+    );
+}
+
+function updateScoreDisplay() {
+    const scoreElement = document.getElementById('total-score');
+    if (scoreElement) {
+        scoreElement.textContent = gameStats.totalScore.toLocaleString();
+    }
+    
+    const streakElement = document.getElementById('current-streak');
+    if (streakElement) {
+        streakElement.textContent = gameStats.currentStreak;
+    }
+}
+
+function resetStreak() {
+    gameStats.currentStreak = 0;
+    updateScoreDisplay();
 }
 
 function createAchievementParticles() {
@@ -1025,6 +1296,196 @@ function createAchievementParticles() {
             }
         });
     }
+}
+
+// ===== EDITOR DE CÓDIGO MEJORADO =====
+function initCodeEditor() {
+    const htmlEditor = document.getElementById('html-editor');
+    const cssEditor = document.getElementById('css-editor');
+    
+    // Configurar autocompletado
+    setupAutocomplete(htmlEditor, 'html');
+    setupAutocomplete(cssEditor, 'css');
+    
+    // Configurar sintaxis highlighting
+    setupSyntaxHighlighting(htmlEditor, 'html');
+    setupSyntaxHighlighting(cssEditor, 'css');
+    
+    // Event listeners para tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            switchTab(tab);
+            playSound('click');
+        });
+    });
+}
+
+function setupAutocomplete(editor, type) {
+    const suggestions = type === 'html' ? htmlSuggestions : cssSuggestions;
+    
+    editor.addEventListener('input', debounce(() => {
+        const cursorPos = editor.selectionStart;
+        const text = editor.value;
+        const word = getCurrentWord(text, cursorPos);
+        
+        if (word.length > 1) {
+            showSuggestions(word, suggestions, editor);
+        } else {
+            hideSuggestions();
+        }
+    }, 300));
+}
+
+const htmlSuggestions = [
+    { text: '<h1>', display: 'h1 - Título principal' },
+    { text: '<h2>', display: 'h2 - Título secundario' },
+    { text: '<div>', display: 'div - Contenedor' },
+    { text: '<p>', display: 'p - Párrafo' },
+    { text: '<span>', display: 'span - Texto inline' },
+    { text: '<button>', display: 'button - Botón' },
+    { text: '<input>', display: 'input - Campo de entrada' },
+    { text: '<img>', display: 'img - Imagen' },
+    { text: '<a>', display: 'a - Enlace' },
+    { text: '<ul>', display: 'ul - Lista desordenada' },
+    { text: '<ol>', display: 'ol - Lista ordenada' },
+    { text: '<li>', display: 'li - Elemento de lista' }
+];
+
+const cssSuggestions = [
+    { text: 'color:', display: 'color - Color del texto' },
+    { text: 'background-color:', display: 'background-color - Color de fondo' },
+    { text: 'border-radius:', display: 'border-radius - Bordes redondeados' },
+    { text: 'box-shadow:', display: 'box-shadow - Sombra' },
+    { text: 'display:', display: 'display - Tipo de visualización' },
+    { text: 'flex', display: 'flex - Layout flexible' },
+    { text: 'grid', display: 'grid - Layout en cuadrícula' },
+    { text: 'margin:', display: 'margin - Margen exterior' },
+    { text: 'padding:', display: 'padding - Margen interior' },
+    { text: 'font-size:', display: 'font-size - Tamaño de fuente' },
+    { text: 'font-weight:', display: 'font-weight - Peso de fuente' },
+    { text: 'text-align:', display: 'text-align - Alineación de texto' },
+    { text: 'transform:', display: 'transform - Transformaciones' },
+    { text: 'transition:', display: 'transition - Transiciones' },
+    { text: 'animation:', display: 'animation - Animaciones' }
+];
+
+function getCurrentWord(text, cursorPos) {
+    const beforeCursor = text.substring(0, cursorPos);
+    const words = beforeCursor.split(/\s+/);
+    return words[words.length - 1] || '';
+}
+
+function showSuggestions(word, suggestions, editor) {
+    const filtered = suggestions.filter(s => 
+        s.text.toLowerCase().includes(word.toLowerCase())
+    );
+    
+    if (filtered.length === 0) {
+        hideSuggestions();
+        return;
+    }
+    
+    const suggestionsEl = document.getElementById('suggestions');
+    if (!suggestionsEl) return;
+    
+    suggestionsEl.innerHTML = '';
+    
+    filtered.forEach(suggestion => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `
+            <span class="suggestion-text">${suggestion.text}</span>
+            <span class="suggestion-desc">${suggestion.display}</span>
+        `;
+        item.addEventListener('click', () => {
+            insertSuggestion(suggestion.text, editor);
+            hideSuggestions();
+        });
+        suggestionsEl.appendChild(item);
+    });
+    
+    suggestionsEl.style.display = 'block';
+}
+
+function hideSuggestions() {
+    const suggestionsEl = document.getElementById('suggestions');
+    if (suggestionsEl) {
+        suggestionsEl.style.display = 'none';
+    }
+}
+
+function insertSuggestion(text, editor) {
+    const cursorPos = editor.selectionStart;
+    const textBefore = editor.value.substring(0, cursorPos);
+    const textAfter = editor.value.substring(cursorPos);
+    
+    // Encontrar la palabra actual
+    const words = textBefore.split(/\s+/);
+    const currentWord = words[words.length - 1] || '';
+    const newTextBefore = textBefore.substring(0, textBefore.length - currentWord.length);
+    
+    editor.value = newTextBefore + text + textAfter;
+    editor.focus();
+    
+    // Posicionar cursor después del texto insertado
+    const newPos = newTextBefore.length + text.length;
+    editor.setSelectionRange(newPos, newPos);
+    
+    playSound('type');
+}
+
+function setupSyntaxHighlighting(editor, type) {
+    editor.addEventListener('input', debounce(() => {
+        highlightSyntax(editor, type);
+    }, 100));
+}
+
+function highlightSyntax(editor, type) {
+    const text = editor.value;
+    let highlighted = text;
+    
+    if (type === 'html') {
+        // Highlighting para HTML
+        highlighted = text
+            .replace(/&lt;/g, '<span class="html-tag">&lt;</span>')
+            .replace(/&gt;/g, '<span class="html-tag">&gt;</span>')
+            .replace(/(&lt;[^&]*&gt;)/g, '<span class="html-element">$1</span>')
+            .replace(/(class="[^"]*")/g, '<span class="html-attribute">$1</span>')
+            .replace(/(&lt;\/[^&]*&gt;)/g, '<span class="html-closing">$1</span>');
+    } else if (type === 'css') {
+        // Highlighting para CSS
+        highlighted = text
+            .replace(/([a-zA-Z-]+):/g, '<span class="css-property">$1:</span>')
+            .replace(/(#[0-9a-fA-F]{3,6})/g, '<span class="css-color">$1</span>')
+            .replace(/(rgba?\([^)]+\))/g, '<span class="css-color">$1</span>')
+            .replace(/([0-9]+px)/g, '<span class="css-value">$1</span>')
+            .replace(/([0-9]+%)/g, '<span class="css-value">$1</span>')
+            .replace(/([a-zA-Z-]+)/g, '<span class="css-selector">$1</span>');
+    }
+    
+    // Crear elemento de highlighting
+    const highlightEl = editor.parentElement?.querySelector('.code-highlight');
+    if (highlightEl) {
+        highlightEl.innerHTML = highlighted;
+    }
+}
+
+function switchTab(tab) {
+    // Actualizar botones de tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    
+    // Actualizar paneles
+    document.querySelectorAll('.editor-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `${tab}-panel`);
+    });
+    
+    // Actualizar editores
+    document.querySelectorAll('.code-editor').forEach(editor => {
+        editor.classList.toggle('hidden', editor.id !== `${tab}-editor`);
+    });
 }
 
 // ===== FUNCIONES UTILITARIAS =====
