@@ -510,6 +510,47 @@ body {
     color: #ff8b94 !important;
 }
 
+/* ===== PANEL DE EJEMPLOS ===== */
+.examples-panel {
+    padding: 1.5rem;
+    background: #1e1e1e;
+    min-height: 400px;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.example-card {
+    background: var(--bg-glass);
+    border: var(--border-glass);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition-medium);
+    text-align: center;
+}
+
+.example-card:hover {
+    background: var(--bg-glass-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-blue);
+}
+
+.example-card h4 {
+    color: var(--primary-green);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.example-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
 /* ===== SUGERENCIAS ===== */
 .editor-suggestions {
     position: absolute;

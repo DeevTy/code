@@ -664,8 +664,22 @@ function setupEventListeners() {
     const htmlEditor = document.getElementById('html-editor');
     const cssEditor = document.getElementById('css-editor');
     
-    htmlEditor.addEventListener('input', debounce(parseAndRender, 500));
-    cssEditor.addEventListener('input', debounce(parseAndRender, 500));
+    // Event listeners para el editor - TIEMPO REAL
+    htmlEditor.addEventListener('input', debounce(parseAndRender, 300));
+    cssEditor.addEventListener('input', debounce(parseAndRender, 300));
+    
+    // Event listeners para cambios inmediatos
+    htmlEditor.addEventListener('keyup', () => {
+        if (htmlEditor.textContent.trim()) {
+            showTypingIndicator();
+        }
+    });
+    
+    cssEditor.addEventListener('keyup', () => {
+        if (cssEditor.textContent.trim()) {
+            showTypingIndicator();
+        }
+    });
 
     // Tabs del editor
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -675,6 +689,8 @@ function setupEventListeners() {
     // Controles del editor
     document.getElementById('format-btn').addEventListener('click', formatCode);
     document.getElementById('clear-btn').addEventListener('click', clearCode);
+    document.getElementById('preview-btn').addEventListener('click', showLivePreview);
+    document.getElementById('count-btn').addEventListener('click', showElementCount);
     
     // Controles del canvas
     document.getElementById('rotate-btn').addEventListener('click', toggleRotation);
@@ -931,7 +947,7 @@ function createParticles() {
     particles.push(particleSystem);
 }
 
-// ===== PARSER DE HTML Y CSS =====
+// ===== PARSER DE HTML Y CSS INTERACTIVO =====
 function parseAndRender() {
     const htmlCode = document.getElementById('html-editor').textContent;
     const cssCode = document.getElementById('css-editor').textContent;
@@ -950,87 +966,526 @@ function parseAndRender() {
         // Verificar objetivos
         checkObjectives();
         
+        // Mostrar feedback visual
+        showRenderSuccess();
+        
     } catch (error) {
-        console.error('Error parsing code:', error);
+        console.error('Error al parsear:', error);
         showNotification('Error en el código: ' + error.message, 'error');
+        showRenderError();
     }
 }
 
+// ===== PARSER HTML MEJORADO =====
+function parseHTML(htmlCode) {
+    const elements = [];
+    
+    // Buscar etiquetas HTML básicas con regex más robusto
+    const tagPatterns = [
+        { tag: 'h1', regex: /<h1[^>]*>(.*?)<\/h1>/gi },
+        { tag: 'h2', regex: /<h2[^>]*>(.*?)<\/h2>/gi },
+        { tag: 'h3', regex: /<h3[^>]*>(.*?)<\/h3>/gi },
+        { tag: 'p', regex: /<p[^>]*>(.*?)<\/p>/gi },
+        { tag: 'div', regex: /<div[^>]*>(.*?)<\/div>/gi },
+        { tag: 'span', regex: /<span[^>]*>(.*?)<\/span>/gi },
+        { tag: 'button', regex: /<button[^>]*>(.*?)<\/button>/gi },
+        { tag: 'input', regex: /<input[^>]*>/gi }
+    ];
+    
+    tagPatterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.regex.exec(htmlCode)) !== null) {
+            const element = {
+                tag: pattern.tag,
+                content: match[1] || '',
+                attributes: parseAttributes(match[0]),
+                position: { x: 0, y: 0, z: 0 }
+            };
+            elements.push(element);
+        }
+    });
+    
+    return elements;
+}
+
+// ===== PARSER CSS MEJORADO =====
 function parseCSS(cssCode) {
     const styles = {};
-    const cssRules = cssCode.match(/\.[\w-]+\s*\{[^}]*\}/g) || [];
     
-    cssRules.forEach(rule => {
-        const className = rule.match(/\.([\w-]+)/)[1];
-        const properties = {};
+    // Buscar selectores CSS (elementos, clases, IDs)
+    const selectorPattern = /([^{]+)\s*\{([^}]+)\}/g;
+    let match;
+    
+    while ((match = selectorPattern.exec(cssCode)) !== null) {
+        const selector = match[1].trim();
+        const properties = match[2];
         
-        const propertyMatches = rule.match(/[\w-]+:\s*[^;]+/g) || [];
-        propertyMatches.forEach(prop => {
-            const [name, value] = prop.split(':').map(s => s.trim());
-            properties[name] = value;
-        });
+        styles[selector] = {};
         
-        styles[className] = properties;
-    });
+        // Parsear propiedades CSS
+        const propertyPattern = /([^:]+):\s*([^;]+);/g;
+        let propMatch;
+        
+        while ((propMatch = propertyPattern.exec(properties)) !== null) {
+            const property = propMatch[1].trim();
+            const value = propMatch[2].trim();
+            styles[selector][property] = value;
+        }
+    }
     
     return styles;
 }
 
-function parseHTML(htmlCode) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlCode, 'text/html');
-    const elements = [];
-    
-    function traverse(node, parent = null) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = {
-                tagName: node.tagName.toLowerCase(),
-                textContent: node.textContent.trim(),
-                className: node.className,
-                children: [],
-                parent: parent
-            };
-            
-            if (parent) {
-                parent.children.push(element);
-            } else {
-                elements.push(element);
-            }
-            
-            Array.from(node.children).forEach(child => traverse(child, element));
-        }
-    }
-    
-    traverse(doc.body);
-    return elements;
-}
-
-// ===== CREACIÓN DE ELEMENTOS 3D =====
+// ===== CREACIÓN DE ELEMENTOS 3D INTERACTIVOS =====
 function create3DElements(elements) {
     let yOffset = 0;
     
     elements.forEach((element, index) => {
-        const mesh = createElementMesh(element, yOffset);
+        const mesh = createElement3D(element, yOffset);
         if (mesh) {
             scene.add(mesh);
             htmlElements.push(mesh);
-            yOffset += 2;
+            
+            // Aplicar estilos CSS si existen
+            applyCSSStyles(mesh, element);
+            
+            // Animación de entrada
+            animateElementIn(mesh, index);
+            
+            yOffset += 2; // Espaciado entre elementos
+        }
+    });
+}
+
+// ===== CREAR ELEMENTO 3D SEGÚN TIPO =====
+function createElement3D(element, yOffset) {
+    let geometry, material, mesh;
+    
+    switch (element.tag.toLowerCase()) {
+        case 'h1':
+            geometry = new THREE.BoxGeometry(4, 1, 0.5);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0x00ff88,
+                transparent: true,
+                opacity: 0.9
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: 'h1', content: element.content };
+            break;
+            
+        case 'h2':
+            geometry = new THREE.BoxGeometry(3, 0.8, 0.5);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0x00d4ff,
+                transparent: true,
+                opacity: 0.9
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: 'h2', content: element.content };
+            break;
+            
+        case 'p':
+            geometry = new THREE.BoxGeometry(5, 0.6, 0.3);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: 'p', content: element.content };
+            break;
+            
+        case 'div':
+            geometry = new THREE.BoxGeometry(6, 2, 0.5);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0x8b5cf6,
+                transparent: true,
+                opacity: 0.7
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: 'div', content: element.content };
+            break;
+            
+        case 'button':
+            geometry = new THREE.BoxGeometry(2, 0.8, 0.3);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0xec4899,
+                transparent: true,
+                opacity: 0.9
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: 'button', content: element.content };
+            break;
+            
+        default:
+            geometry = new THREE.BoxGeometry(3, 0.5, 0.3);
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0x666666,
+                transparent: true,
+                opacity: 0.7
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, yOffset, 0);
+            mesh.userData = { type: element.tag, content: element.content };
+    }
+    
+    // Configurar sombras
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    
+    return mesh;
+}
+
+// ===== APLICAR ESTILOS CSS A ELEMENTOS 3D =====
+function applyCSSStyles(mesh, element) {
+    const elementType = element.tag.toLowerCase();
+    const styles = cssStyles[elementType] || cssStyles['.' + elementType] || cssStyles['#' + elementType];
+    
+    if (styles) {
+        // Aplicar colores
+        if (styles['color']) {
+            const color = parseColor(styles['color']);
+            if (color) mesh.material.color.setHex(color);
+        }
+        
+        if (styles['background-color']) {
+            const bgColor = parseColor(styles['background-color']);
+            if (bgColor) mesh.material.color.setHex(bgColor);
+        }
+        
+        // Aplicar bordes redondeados
+        if (styles['border-radius']) {
+            const radius = parseFloat(styles['border-radius']);
+            if (!isNaN(radius)) {
+                // Crear nueva geometría con bordes redondeados
+                const roundedGeometry = createRoundedBox(mesh.geometry.parameters.width, 
+                                                       mesh.geometry.parameters.height, 
+                                                       mesh.geometry.parameters.depth, 
+                                                       radius);
+                mesh.geometry.dispose();
+                mesh.geometry = roundedGeometry;
+            }
+        }
+        
+        // Aplicar sombras
+        if (styles['box-shadow']) {
+            mesh.material.emissive.setHex(0x333333);
+            mesh.material.emissiveIntensity = 0.2;
+        }
+        
+        // Aplicar transformaciones
+        if (styles['transform']) {
+            if (styles['transform'].includes('rotate')) {
+                const angle = parseFloat(styles['transform'].match(/rotate\(([^)]+)\)/)?.[1] || '0');
+                mesh.rotation.z = THREE.MathUtils.degToRad(angle);
+            }
+        }
+    }
+}
+
+// ===== FUNCIONES AUXILIARES =====
+function parseAttributes(htmlString) {
+    const attributes = {};
+    const attrPattern = /(\w+)=["']([^"']+)["']/g;
+    let match;
+    
+    while ((match = attrPattern.exec(htmlString)) !== null) {
+        attributes[match[1]] = match[2];
+    }
+    
+    return attributes;
+}
+
+function parseColor(colorString) {
+    // Convertir colores CSS a hexadecimal
+    if (colorString.startsWith('#')) {
+        return parseInt(colorString.slice(1), 16);
+    }
+    
+    // Colores básicos
+    const colorMap = {
+        'red': 0xff0000,
+        'green': 0x00ff00,
+        'blue': 0x0000ff,
+        'yellow': 0xffff00,
+        'purple': 0x800080,
+        'orange': 0xffa500,
+        'pink': 0xffc0cb,
+        'white': 0xffffff,
+        'black': 0x000000,
+        'gray': 0x808080
+    };
+    
+    return colorMap[colorString.toLowerCase()] || 0xffffff;
+}
+
+function createRoundedBox(width, height, depth, radius) {
+    // Geometría básica con bordes redondeados simulados
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    return geometry;
+}
+
+function animateElementIn(mesh, index) {
+    // Animación de entrada con GSAP
+    mesh.scale.set(0, 0, 0);
+    mesh.rotation.set(0, Math.PI * 2, 0);
+    
+    gsap.to(mesh.scale, {
+        x: 1, y: 1, z: 1,
+        duration: 0.8,
+        delay: index * 0.2,
+        ease: "back.out(1.7)"
+    });
+    
+    gsap.to(mesh.rotation, {
+        x: 0, y: 0, z: 0,
+        duration: 0.8,
+        delay: index * 0.2,
+        ease: "back.out(1.7)"
+    });
+}
+
+function showRenderSuccess() {
+    const overlay = document.querySelector('.canvas-overlay');
+    const successMessage = document.getElementById('success-message');
+    
+    overlay.classList.add('active');
+    successMessage.style.display = 'block';
+    
+    setTimeout(() => {
+        overlay.classList.remove('active');
+        successMessage.style.display = 'none';
+    }, 2000);
+}
+
+function showRenderError() {
+    const overlay = document.querySelector('.canvas-overlay');
+    overlay.classList.add('active');
+    
+    setTimeout(() => {
+        overlay.classList.remove('active');
+    }, 1000);
+}
+
+// ===== INDICADORES VISUALES EN TIEMPO REAL =====
+function showTypingIndicator() {
+    const canvas = document.getElementById('three-canvas');
+    canvas.style.filter = 'brightness(1.1)';
+    
+    setTimeout(() => {
+        canvas.style.filter = 'brightness(1)';
+    }, 200);
+}
+
+function showLivePreview() {
+    const previewIndicator = document.createElement('div');
+    previewIndicator.className = 'live-preview-indicator';
+    previewIndicator.innerHTML = '🔄 Actualizando...';
+    previewIndicator.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 255, 136, 0.9);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(previewIndicator);
+    
+    setTimeout(() => {
+        previewIndicator.remove();
+    }, 1000);
+}
+
+// ===== SISTEMA DE FEEDBACK VISUAL =====
+function highlightElement(elementType) {
+    const meshes = htmlElements.filter(mesh => mesh.userData.type === elementType);
+    meshes.forEach(mesh => {
+        const originalColor = mesh.material.color.getHex();
+        mesh.material.color.setHex(0xffff00);
+        
+        setTimeout(() => {
+            mesh.material.color.setHex(originalColor);
+        }, 1000);
+    });
+}
+
+function showElementCount() {
+    const htmlCode = document.getElementById('html-editor').textContent;
+    const elementCounts = {};
+    
+    ['h1', 'h2', 'p', 'div', 'button'].forEach(tag => {
+        const regex = new RegExp(`<${tag}[^>]*>`, 'gi');
+        const matches = htmlCode.match(regex);
+        elementCounts[tag] = matches ? matches.length : 0;
+    });
+    
+    let countText = 'Elementos creados:\n';
+    Object.entries(elementCounts).forEach(([tag, count]) => {
+        if (count > 0) {
+            countText += `${tag}: ${count}\n`;
         }
     });
     
-    // Animar entrada de elementos
-    animateElementsIn();
+    showNotification(countText, 'info');
 }
 
-function createElementMesh(element, yOffset) {
-    let geometry, material, mesh;
-    
-    switch (element.tagName) {
-        case 'h1':
-        case 'h2':
-        case 'h3':
-            geometry = new THREE.BoxGeometry(3, 1, 0.2);
-            material = new THREE.MeshPhongMaterial({ 
+// ===== SISTEMA DE EJEMPLOS =====
+const examples = {
+    basic: {
+        html: `<h1>Mi Primera Página</h1>
+<p>Este es un párrafo simple</p>
+<h2>Subtítulo</h2>
+<p>Otro párrafo con texto</p>`,
+        css: `h1 {
+    color: #00ff88;
+}
+
+h2 {
+    color: #00d4ff;
+}
+
+p {
+    color: #ffffff;
+}`
+    },
+    styled: {
+        html: `<h1>Página Colorida</h1>
+<div class="card">
+    <h2>Título de la Card</h2>
+    <p>Contenido con estilo</p>
+    <button>Botón Bonito</button>
+</div>`,
+        css: `h1 {
+    color: #ff6b35;
+    text-shadow: 0 0 10px #ff6b35;
+}
+
+.card {
+    background-color: #8b5cf6;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+}
+
+button {
+    background-color: #ec4899;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+}`
+    },
+    layout: {
+        html: `<div class="header">
+    <h1>Header Principal</h1>
+</div>
+<div class="content">
+    <div class="sidebar">
+        <h3>Menú</h3>
+        <p>Enlaces aquí</p>
+    </div>
+    <div class="main">
+        <h2>Contenido Principal</h2>
+        <p>Texto del contenido</p>
+    </div>
+</div>`,
+        css: `.header {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.content {
+    display: flex;
+    gap: 20px;
+}
+
+.sidebar {
+    background-color: #555;
+    padding: 15px;
+    border-radius: 8px;
+    width: 200px;
+}
+
+.main {
+    background-color: #777;
+    padding: 20px;
+    border-radius: 8px;
+    flex: 1;
+}`
+    },
+    interactive: {
+        html: `<h1>Página Interactiva</h1>
+<div class="container">
+    <button class="btn-primary">Botón Principal</button>
+    <button class="btn-secondary">Botón Secundario</button>
+    <div class="card">
+        <h3>Card Interactiva</h3>
+        <p>Haz clic en los botones</p>
+    </div>
+</div>`,
+        css: `.container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #00ff88, #00d4ff);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: linear-gradient(45deg, #ec4899, #8b5cf6);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.card {
+    background-color: #333;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}`
+    }
+};
+
+function loadExample(exampleName) {
+    const example = examples[exampleName];
+    if (example) {
+        document.getElementById('html-editor').textContent = example.html;
+        document.getElementById('css-editor').textContent = example.css;
+        
+        // Cambiar a tab HTML
+        switchTab('html');
+        
+        // Renderizar inmediatamente
+        parseAndRender();
+        
+        showNotification(`Ejemplo "${exampleName}" cargado`, 'success');
+        playSound('success');
+    }
+}
                 color: 0x00ff88,
                 transparent: true,
                 opacity: 0.9
@@ -1854,15 +2309,27 @@ function clearScene() {
 }
 
 function switchTab(tabName) {
+    // Ocultar todos los editores y paneles
+    document.querySelectorAll('.code-editor, .examples-panel').forEach(editor => {
+        editor.classList.add('hidden');
+    });
+    
+    // Remover clase active de todos los tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
     
-    document.querySelectorAll('.code-editor').forEach(editor => {
-        editor.classList.add('hidden');
-    });
-    document.getElementById(`${tabName}-editor`).classList.remove('hidden');
+    // Mostrar editor correspondiente
+    if (tabName === 'html') {
+        document.getElementById('html-editor').classList.remove('hidden');
+        document.querySelector('[data-tab="html"]').classList.add('active');
+    } else if (tabName === 'css') {
+        document.getElementById('css-editor').classList.remove('hidden');
+        document.querySelector('[data-tab="css"]').classList.add('active');
+    } else if (tabName === 'examples') {
+        document.getElementById('examples-panel').classList.remove('hidden');
+        document.querySelector('[data-tab="examples"]').classList.add('active');
+    }
 }
 
 function switchModule(moduleName) {

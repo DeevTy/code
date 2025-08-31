@@ -85,15 +85,18 @@
                 <div class="editor-controls">
                     <button class="editor-btn" id="format-btn">✨ Formatear</button>
                     <button class="editor-btn" id="clear-btn">🗑️ Limpiar</button>
+                    <button class="editor-btn" id="preview-btn">👁️ Vista Previa</button>
+                    <button class="editor-btn" id="count-btn">📊 Contar</button>
                 </div>
             </div>
             <div class="editor-container">
-                <div class="editor-tabs">
-                    <button class="tab-btn active" data-tab="html">HTML</button>
-                    <button class="tab-btn" data-tab="css">CSS</button>
-                </div>
+                                 <div class="editor-tabs">
+                     <button class="tab-btn active" data-tab="html">HTML</button>
+                     <button class="tab-btn" data-tab="css">CSS</button>
+                     <button class="tab-btn" data-tab="examples">📚 Ejemplos</button>
+                 </div>
                 <div class="editor-content">
-                    <div class="code-editor" id="html-editor" contenteditable="true">
+                                         <div class="code-editor" id="html-editor" contenteditable="true">
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
@@ -103,10 +106,11 @@
     &lt;h1&gt;¡Hola Mundo!&lt;/h1&gt;
     &lt;div class="container"&gt;
         &lt;p&gt;Mi primera página&lt;/p&gt;
+        &lt;button&gt;¡Haz clic!&lt;/button&gt;
     &lt;/div&gt;
 &lt;/body&gt;
 &lt;/html&gt;</div>
-                    <div class="code-editor hidden" id="css-editor" contenteditable="true">
+                                         <div class="code-editor hidden" id="css-editor" contenteditable="true">
 /* Estilos CSS */
 body {
     background-color: #1a1a1a;
@@ -123,7 +127,36 @@ h1 {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+button {
+    background-color: #ec4899;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
 }</div>
+                     <div class="examples-panel hidden" id="examples-panel">
+                         <div class="examples-grid">
+                             <div class="example-card" onclick="loadExample('basic')">
+                                 <h4>🎯 Básico</h4>
+                                 <p>HTML simple con títulos y párrafos</p>
+                             </div>
+                             <div class="example-card" onclick="loadExample('styled')">
+                                 <h4>🎨 Estilizado</h4>
+                                 <p>Elementos con CSS colorido</p>
+                             </div>
+                             <div class="example-card" onclick="loadExample('layout')">
+                                 <h4>📐 Layout</h4>
+                                 <p>Divs y contenedores</p>
+                             </div>
+                             <div class="example-card" onclick="loadExample('interactive')">
+                                 <h4>⚡ Interactivo</h4>
+                                 <p>Botones y elementos dinámicos</p>
+                             </div>
+                         </div>
+                     </div>
                 </div>
             </div>
         </section>
