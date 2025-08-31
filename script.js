@@ -2031,18 +2031,3 @@ if (typeof THREE.OrbitControls === 'undefined') {
         }
     };
 }
-            const newDistance = Math.max(this.minDistance, Math.min(this.maxDistance, distance - event.deltaY * 0.01));
-            this.camera.position.normalize().multiplyScalar(newDistance);
-        }
-        
-        update() {
-            // Implementación básica de damping
-        }
-        
-        reset() {
-            this.camera.position.set(0, 5, 10);
-        }
-    }
-    
-    THREE.OrbitControls = OrbitControls;
-}
