@@ -1486,69 +1486,9 @@ function loadExample(exampleName) {
         playSound('success');
     }
 }
-                color: 0x00ff88,
-                transparent: true,
-                opacity: 0.9
-            });
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(0, yOffset + 2, 0);
-            
-            // Agregar texto 3D
-            addText3D(element.textContent, mesh.position.clone().add(new THREE.Vector3(0, 0, 0.2)));
-            break;
-            
-        case 'div':
-            const size = element.children.length > 0 ? 2 : 1;
-            geometry = new THREE.BoxGeometry(size, size, 0.3);
-            material = new THREE.MeshPhongMaterial({ 
-                color: 0x333333,
-                transparent: true,
-                opacity: 0.8
-            });
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(0, yOffset, 0);
-            break;
-            
-        case 'p':
-            geometry = new THREE.BoxGeometry(2, 0.5, 0.1);
-            material = new THREE.MeshPhongMaterial({ 
-                color: 0x666666,
-                transparent: true,
-                opacity: 0.7
-            });
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(0, yOffset, 0);
-            break;
-            
-        case 'span':
-            geometry = new THREE.SphereGeometry(0.3, 8, 8);
-            material = new THREE.MeshPhongMaterial({ 
-                color: 0x8b5cf6,
-                transparent: true,
-                opacity: 0.8
-            });
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(0, yOffset, 0);
-            break;
-    }
-    
-    if (mesh) {
-        // Aplicar estilos CSS
-        applyCSSStyles(mesh, element);
-        
-        // Configurar sombras
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        
-        // Agregar propiedades personalizadas
-        mesh.userData = {
-            element: element,
-            originalPosition: mesh.position.clone()
-        };
-    }
-    
-    return mesh;
-}
+
+// Hacer la función disponible globalmente
+window.loadExample = loadExample;
 
 function addText3D(text, position) {
     const loader = new THREE.FontLoader();
