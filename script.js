@@ -1339,8 +1339,9 @@ function showElementCount() {
     showNotification(countText, 'info');
 }
 
-// ===== SISTEMA DE EJEMPLOS =====
+// ===== SISTEMA DE EJEMPLOS MUCHO MÁS EXPANDIDO =====
 const examples = {
+    // === EJEMPLOS BÁSICOS ===
     basic: {
         html: `<h1>Mi Primera Página</h1>
 <p>Este es un párrafo simple</p>
@@ -1358,114 +1359,765 @@ p {
     color: #ffffff;
 }`
     },
-    styled: {
-        html: `<h1>Página Colorida</h1>
-<div class="card">
-    <h2>Título de la Card</h2>
-    <p>Contenido con estilo</p>
-    <button>Botón Bonito</button>
-</div>`,
-        css: `h1 {
-    color: #ff6b35;
-    text-shadow: 0 0 10px #ff6b35;
-}
-
-.card {
-    background-color: #8b5cf6;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
-}
-
-button {
-    background-color: #ec4899;
-    color: white;
-    border-radius: 8px;
-    padding: 12px 24px;
-    border: none;
-    cursor: pointer;
-}`
-    },
-    layout: {
-        html: `<div class="header">
-    <h1>Header Principal</h1>
-</div>
-<div class="content">
-    <div class="sidebar">
-        <h3>Menú</h3>
-        <p>Enlaces aquí</p>
-    </div>
-    <div class="main">
-        <h2>Contenido Principal</h2>
-        <p>Texto del contenido</p>
-    </div>
-</div>`,
-        css: `.header {
-    background-color: #333;
+    
+    // === EJEMPLOS DE ESTRUCTURA ===
+    structure: {
+        html: `<header class="main-header">
+    <h1>Mi Sitio Web</h1>
+    <nav>
+        <a href="#">Inicio</a>
+        <a href="#">Acerca</a>
+        <a href="#">Contacto</a>
+    </nav>
+</header>
+<main>
+    <section class="hero">
+        <h2>Bienvenido</h2>
+        <p>Contenido principal aquí</p>
+    </section>
+    <article class="content">
+        <h3>Artículo</h3>
+        <p>Texto del artículo</p>
+    </article>
+</main>
+<footer>
+    <p>&copy; 2024 Mi Sitio</p>
+</footer>`,
+        css: `.main-header {
+    background: linear-gradient(45deg, #333, #555);
     padding: 20px;
     border-radius: 10px;
 }
 
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+nav a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.hero {
+    background: linear-gradient(135deg, #00ff88, #00d4ff);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    margin: 20px 0;
+}
+
 .content {
-    display: flex;
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 5px solid #00ff88;
+}
+
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}`
+    },
+    
+    // === EJEMPLOS DE LAYOUT ===
+    layout: {
+        html: `<div class="container">
+    <header class="header">
+        <h1>Layout Completo</h1>
+    </header>
+    <div class="content-wrapper">
+        <aside class="sidebar">
+            <h3>Sidebar</h3>
+            <ul>
+                <li>Enlace 1</li>
+                <li>Enlace 2</li>
+                <li>Enlace 3</li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <h2>Contenido Principal</h2>
+            <p>Este es el contenido principal de la página.</p>
+            <div class="card-grid">
+                <div class="card">Card 1</div>
+                <div class="card">Card 2</div>
+                <div class="card">Card 3</div>
+            </div>
+        </main>
+    </div>
+</div>`,
+        css: `.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: linear-gradient(45deg, #8b5cf6, #ec4899);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 250px 1fr;
     gap: 20px;
 }
 
 .sidebar {
-    background-color: #555;
-    padding: 15px;
-    border-radius: 8px;
-    width: 200px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
 }
 
-.main {
-    background-color: #777;
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px;
+    margin: 5px 0;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.sidebar li:hover {
+    background: #00ff88;
+    color: white;
+}
+
+.main-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    background: linear-gradient(135deg, #00d4ff, #00ff88);
+    color: white;
     padding: 20px;
-    border-radius: 8px;
-    flex: 1;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }`
     },
-    interactive: {
-        html: `<h1>Página Interactiva</h1>
-<div class="container">
-    <button class="btn-primary">Botón Principal</button>
-    <button class="btn-secondary">Botón Secundario</button>
-    <div class="card">
-        <h3>Card Interactiva</h3>
-        <p>Haz clic en los botones</p>
+    
+    // === EJEMPLOS DE ANIMACIONES ===
+    animations: {
+        html: `<div class="animated-container">
+    <h1 class="bounce-title">Título Animado</h1>
+    <div class="animated-cards">
+        <div class="card pulse">Card 1</div>
+        <div class="card slide-in">Card 2</div>
+        <div class="card rotate">Card 3</div>
     </div>
+    <button class="animated-button">Botón Animado</button>
 </div>`,
-        css: `.container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 20px;
+        css: `@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-20px); }
+    60% { transform: translateY(-10px); }
 }
 
-.btn-primary {
-    background: linear-gradient(45deg, #00ff88, #00d4ff);
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animated-container {
+    text-align: center;
+    padding: 40px;
+}
+
+.bounce-title {
+    color: #00ff88;
+    animation: bounce 2s infinite;
+    font-size: 2.5em;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+.animated-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 40px 0;
+}
+
+.card {
+    width: 150px;
+    height: 100px;
+    background: linear-gradient(45deg, #ff6b35, #ec4899);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.card.pulse {
+    animation: pulse 2s infinite;
+}
+
+.card.slide-in {
+    animation: slideIn 1s ease-out;
+}
+
+.card.rotate {
+    animation: rotate 3s linear infinite;
+}
+
+.card:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.animated-button {
+    background: linear-gradient(45deg, #00d4ff, #8b5cf6);
     color: white;
     border: none;
     padding: 15px 30px;
     border-radius: 25px;
+    font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn-secondary {
-    background: linear-gradient(45deg, #ec4899, #8b5cf6);
-    color: white;
-    border: none;
-    padding: 12px 25px;
+.animated-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4);
+}
+
+.animated-button:active {
+    transform: translateY(-1px);
+}`
+    },
+    
+    // === EJEMPLOS DE FORMULARIOS ===
+    forms: {
+        html: `<div class="form-container">
+    <h2>Formulario de Contacto</h2>
+    <form class="contact-form">
+        <div class="form-group">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Mensaje:</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="submit-btn">Enviar</button>
+            <button type="reset" class="reset-btn">Limpiar</button>
+        </div>
+    </form>
+</div>`,
+        css: `.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 20px;
+    color: white;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1em;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #00ff88;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.submit-btn,
+.reset-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1em;
+}
+
+.submit-btn {
+    background: linear-gradient(45deg, #00ff88, #00d4ff);
+    color: #333;
+}
+
+.reset-btn {
+    background: linear-gradient(45deg, #ff6b35, #ec4899);
+    color: white;
+}
+
+.submit-btn:hover,
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}`
+    },
+    
+    // === EJEMPLOS DE NAVEGACIÓN ===
+    navigation: {
+        html: `<nav class="navbar">
+    <div class="nav-brand">
+        <h2>Mi Sitio</h2>
+    </div>
+    <ul class="nav-menu">
+        <li><a href="#" class="nav-link">Inicio</a></li>
+        <li><a href="#" class="nav-link">Servicios</a></li>
+        <li class="dropdown">
+            <a href="#" class="nav-link">Productos ▼</a>
+            <ul class="dropdown-menu">
+                <li><a href="#">Producto 1</a></li>
+                <li><a href="#">Producto 2</a></li>
+                <li><a href="#">Producto 3</a></li>
+            </ul>
+        </li>
+        <li><a href="#" class="nav-link">Contacto</a></li>
+    </ul>
+    <div class="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</nav>`,
+        css: `.navbar {
+    background: linear-gradient(45deg, #2c3e50, #34495e);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.nav-brand h2 {
+    color: #00ff88;
+    margin: 0;
+    font-size: 1.8em;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    transform: translateY(-2px);
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #34495e;
+    border-radius: 8px;
+    padding: 1rem 0;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    list-style: none;
+}
+
+.dropdown-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+}
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
     cursor: pointer;
 }
 
-.card {
-    background-color: #333;
-    border-radius: 15px;
+.nav-toggle span {
+    width: 25px;
+    height: 3px;
+    background: white;
+    margin: 3px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+}`
+    },
+    
+    // === EJEMPLOS DE RESPONSIVE ===
+    responsive: {
+        html: `<div class="responsive-container">
+    <header class="responsive-header">
+        <h1>Diseño Responsivo</h1>
+        <p>Este diseño se adapta a cualquier dispositivo</p>
+    </header>
+    <div class="responsive-grid">
+        <div class="responsive-card">
+            <h3>Card 1</h3>
+            <p>Contenido de la primera tarjeta</p>
+        </div>
+        <div class="responsive-card">
+            <h3>Card 2</h3>
+            <p>Contenido de la segunda tarjeta</p>
+        </div>
+        <div class="responsive-card">
+            <h3>Card 3</h3>
+            <p>Contenido de la tercera tarjeta</p>
+        </div>
+        <div class="responsive-card">
+            <h3>Card 4</h3>
+            <p>Contenido de la cuarta tarjeta</p>
+        </div>
+    </div>
+</div>`,
+        css: `.responsive-container {
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
+}
+
+.responsive-header {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.responsive-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.responsive-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 2px solid transparent;
+}
+
+.responsive-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-color: #00ff88;
+}
+
+.responsive-card h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.responsive-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Media Queries para Responsive */
+@media (max-width: 768px) {
+    .responsive-header h1 {
+        font-size: 2em;
+    }
+    
+    .responsive-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .responsive-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .responsive-container {
+        padding: 10px;
+    }
+    
+    .responsive-header {
+        padding: 30px 15px;
+    }
+    
+    .responsive-header h1 {
+        font-size: 1.8em;
+    }
+}`
+    },
+    
+    // === EJEMPLOS AVANZADOS ===
+    advanced: {
+        html: `<div class="advanced-container">
+    <div class="glass-card">
+        <h2>Glassmorphism</h2>
+        <p>Efecto de vidrio esmerilado moderno</p>
+        <button class="neon-button">Botón Neón</button>
+    </div>
+    <div class="gradient-card">
+        <h2>Gradientes Animados</h2>
+        <div class="gradient-bg"></div>
+    </div>
+    <div class="particle-card">
+        <h2>Partículas CSS</h2>
+        <div class="particles"></div>
+    </div>
+</div>`,
+        css: `@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes particleMove {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
+.advanced-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 40px;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    color: white;
+    transition: transform 0.3s;
+}
+
+.glass-card:hover {
+    transform: scale(1.05);
+}
+
+.neon-button {
+    background: transparent;
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-shadow: 0 0 10px #00ff88;
     box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.neon-button:hover {
+    background: #00ff88;
+    color: #333;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+    transform: translateY(-2px);
+}
+
+.gradient-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #ff6b35, #ec4899, #8b5cf6, #00d4ff);
+    background-size: 400% 400%;
+    animation: gradientShift 3s ease infinite;
+    opacity: 0.1;
+    z-index: 1;
+}
+
+.gradient-card h2 {
+    position: relative;
+    z-index: 2;
+    color: #333;
+}
+
+.particle-card {
+    background: #2c3e50;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.particles::before,
+.particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: particleMove 3s linear infinite;
+}
+
+.particles::before {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.particles::after {
+    left: 80%;
+    animation-delay: 1.5s;
 }`
     }
 };
