@@ -2251,22 +2251,7 @@ function highlightSyntax(editor, type) {
     }
 }
 
-function switchTab(tab) {
-    // Actualizar botones de tab
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tab);
-    });
-    
-    // Actualizar paneles
-    document.querySelectorAll('.editor-panel').forEach(panel => {
-        panel.classList.toggle('active', panel.id === `${tab}-panel`);
-    });
-    
-    // Actualizar editores
-    document.querySelectorAll('.code-editor').forEach(editor => {
-        editor.classList.toggle('hidden', editor.id !== `${tab}-editor`);
-    });
-}
+
 
 // ===== FUNCIONES UTILITARIAS =====
 function debounce(func, wait) {
