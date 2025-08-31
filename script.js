@@ -744,12 +744,48 @@ function initializeThreeJS() {
     // Shaders personalizados
     createCustomShaders();
     
-    // Controles de órbita
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxDistance = 50;
-    controls.minDistance = 2;
+    // Controles de órbita (versión simplificada)
+    if (typeof THREE.OrbitControls !== 'undefined') {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 50;
+        controls.minDistance = 2;
+    } else {
+        console.log('OrbitControls no disponible, usando controles básicos');
+        // Controles básicos con mouse
+        let isMouseDown = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        renderer.domElement.addEventListener('mousedown', (event) => {
+            isMouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        });
+        
+        renderer.domElement.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+        
+        renderer.domElement.addEventListener('mousemove', (event) => {
+            if (isMouseDown) {
+                const deltaX = event.clientX - mouseX;
+                const deltaY = event.clientY - mouseY;
+                
+                camera.position.x += deltaX * 0.01;
+                camera.position.y -= deltaY * 0.01;
+                
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        });
+        
+        renderer.domElement.addEventListener('wheel', (event) => {
+            const zoomSpeed = 0.1;
+            camera.position.z += event.deltaY * zoomSpeed;
+        });
+    }
     
     // Iluminación avanzada
     setupAdvancedLighting();
@@ -766,21 +802,9 @@ function initializeThreeJS() {
 
 // ===== POST-PROCESAMIENTO =====
 function setupPostProcessing() {
-    // Composer principal
-    composer = new THREE.EffectComposer(renderer);
-    
-    // Render pass
-    const renderPass = new THREE.RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    
-    // Bloom pass para efectos de resplandor
-    bloomPass = new THREE.UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.5,  // Intensidad
-        0.4,  // Radio
-        0.85  // Umbral
-    );
-    composer.addPass(bloomPass);
+    // Por ahora, usamos el renderer estándar
+    // Los efectos de post-procesamiento se pueden agregar más tarde
+    console.log('Post-procesamiento configurado (versión simplificada)');
 }
 
 // ===== SHADERS PERSONALIZADOS =====
@@ -1185,7 +1209,11 @@ function animate() {
         mesh.rotation.y += 0.005;
     });
     
-    controls.update();
+    // Actualizar controles si están disponibles
+    if (controls && typeof controls.update === 'function') {
+        controls.update();
+    }
+    
     renderer.render(scene, camera);
 }
 
@@ -1873,7 +1901,9 @@ function toggleZoom() {
 
 function resetCamera() {
     camera.position.set(0, 5, 10);
-    controls.reset();
+    if (controls && typeof controls.reset === 'function') {
+        controls.reset();
+    }
     showNotification('Cámara reseteada', 'info');
 }
 
@@ -1917,10 +1947,9 @@ function onWindowResize() {
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 }
 
-// ===== THREE.JS ORBIT CONTROLS (si no está disponible) =====
+// ===== IMPLEMENTACIÓN BÁSICA DE ORBIT CONTROLS =====
 if (typeof THREE.OrbitControls === 'undefined') {
-    // Implementación básica de controles de órbita
-    class OrbitControls {
+    THREE.OrbitControls = class OrbitControls {
         constructor(camera, domElement) {
             this.camera = camera;
             this.domElement = domElement;
@@ -1932,6 +1961,7 @@ if (typeof THREE.OrbitControls === 'undefined') {
             this.isMouseDown = false;
             this.mouseX = 0;
             this.mouseY = 0;
+            this.target = new THREE.Vector3(0, 0, 0);
             
             this.setupEventListeners();
         }
@@ -1955,8 +1985,23 @@ if (typeof THREE.OrbitControls === 'undefined') {
             const deltaX = event.clientX - this.mouseX;
             const deltaY = event.clientY - this.mouseY;
             
-            this.camera.position.x += deltaX * 0.01;
-            this.camera.position.y -= deltaY * 0.01;
+            // Rotación horizontal
+            const angleX = deltaX * 0.01;
+            const angleY = deltaY * 0.01;
+            
+            // Rotar alrededor del eje Y
+            const radius = this.camera.position.distanceTo(this.target);
+            const theta = Math.atan2(this.camera.position.x - this.target.x, this.camera.position.z - this.target.z);
+            const phi = Math.acos((this.camera.position.y - this.target.y) / radius);
+            
+            const newTheta = theta - angleX;
+            const newPhi = Math.max(0.1, Math.min(Math.PI - 0.1, phi + angleY));
+            
+            this.camera.position.x = this.target.x + radius * Math.sin(newPhi) * Math.sin(newTheta);
+            this.camera.position.y = this.target.y + radius * Math.cos(newPhi);
+            this.camera.position.z = this.target.z + radius * Math.sin(newPhi) * Math.cos(newTheta);
+            
+            this.camera.lookAt(this.target);
             
             this.mouseX = event.clientX;
             this.mouseY = event.clientY;
@@ -1967,7 +2012,25 @@ if (typeof THREE.OrbitControls === 'undefined') {
         }
         
         onMouseWheel(event) {
-            const distance = this.camera.position.length();
+            const zoomSpeed = 0.1;
+            const direction = event.deltaY > 0 ? 1 : -1;
+            const distance = this.camera.position.distanceTo(this.target);
+            const newDistance = Math.max(this.minDistance, Math.min(this.maxDistance, distance + direction * zoomSpeed));
+            
+            const directionVector = this.camera.position.clone().sub(this.target).normalize();
+            this.camera.position.copy(this.target.clone().add(directionVector.multiplyScalar(newDistance)));
+        }
+        
+        update() {
+            // Función de actualización para damping
+        }
+        
+        reset() {
+            this.camera.position.set(0, 5, 10);
+            this.camera.lookAt(this.target);
+        }
+    };
+}
             const newDistance = Math.max(this.minDistance, Math.min(this.maxDistance, distance - event.deltaY * 0.01));
             this.camera.position.normalize().multiplyScalar(newDistance);
         }
